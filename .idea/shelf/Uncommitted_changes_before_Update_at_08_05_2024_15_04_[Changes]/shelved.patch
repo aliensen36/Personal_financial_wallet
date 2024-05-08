@@ -1,0 +1,405 @@
+Index: Personal_financial_wallet.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>import os\r\n\r\n# Вывод текущего баланса\r\ndef show_balance(records):\r\n    total_income = sum(record['amount'] for record in records if record['category'] == 'Доход')\r\n    total_expense = sum(record['amount'] for record in records if record['category'] == 'Расход')\r\n    total_balance = total_income - total_expense\r\n    print(f\"Текущий баланс: {total_balance}\")\r\n    print(f\"Доходы: {total_income}\")\r\n    print(f\"Расходы: {total_expense}\")\r\n\r\n# Добавление записи\r\ndef add_record(records):\r\n    print(\"Введите данные о новой записи:\")\r\n    date = input(\"Дата (гггг-мм-дд): \")\r\n    category_code = input(\"Выберите категорию (1 - Доход, 2 - Расход): \")\r\n    category = 'Доход' if category_code == '1' else 'Расход'\r\n    amount = float(input(\"Сумма: \"))\r\n    description = input(\"Описание: \")\r\n    records.append({'date': date, 'category': category, 'amount': amount, 'description': description})\r\n    print(\"Запись успешно добавлена!\")\r\n\r\n# Редактирование записи\r\ndef edit_record(records):\r\n    print(\"Введите номер записи, которую хотите отредактировать:\")\r\n    for i, record in enumerate(records):\r\n        print(f\"{i + 1}. {record['date']} - {record['category']} - {record['amount']} - {record['description']}\")\r\n    try:\r\n        index = int(input(\"Номер записи: \")) - 1\r\n        if 0 <= index < len(records):\r\n            print(\"Выберите поле для редактирования:\")\r\n            print(\"1. Дата\")\r\n            print(\"2. Категория\")\r\n            print(\"3. Сумма\")\r\n            print(\"4. Описание\")\r\n            choice = input(\"Введите номер поля: \")\r\n            if choice == '1':\r\n                records[index]['date'] = input(\"Введите новую дату (гггг-мм-дд): \")\r\n            elif choice == '2':\r\n                category_code = input(\"Выберите новую категорию (1 - Доход, 2 - Расход): \")\r\n                records[index]['category'] = 'Доход' if category_code == '1' else 'Расход'\r\n            elif choice == '3':\r\n                records[index]['amount'] = float(input(\"Введите новую сумму: \"))\r\n            elif choice == '4':\r\n                records[index]['description'] = input(\"Введите новое описание: \")\r\n            else:\r\n                print(\"Некорректный ввод.\")\r\n        else:\r\n            print(\"Некорректный номер записи.\")\r\n    except ValueError:\r\n        print(\"Некорректный ввод.\")\r\n\r\n\r\n# Поиск записи\r\ndef search_records(records):\r\n    print(\"Выберите критерии для поиска:\")\r\n    print(\"1. По категории\")\r\n    print(\"2. По дате\")\r\n    print(\"3. По сумме\")\r\n    choice = input(\"Введите номер критерия: \")\r\n    if choice == '1':\r\n        category_code = input(\"Выберите категорию (1 - Доход, 2 - Расход): \")\r\n        category = 'Доход' if category_code == '1' else 'Расход'\r\n        found_records = [record for record in records if record['category'] == category]\r\n    elif choice == '2':\r\n        date = input(\"Введите дату (гггг-мм-дд): \")\r\n        found_records = [record for record in records if record['date'] == date]\r\n    elif choice == '3':\r\n        amount = float(input(\"Введите сумму: \"))\r\n        found_records = [record for record in records if record['amount'] == amount]\r\n    else:\r\n        print(\"Некорректный ввод.\")\r\n        return\r\n\r\n    if found_records:\r\n        print(\"Найденные записи:\")\r\n        for record in found_records:\r\n            print(\r\n                f\"Дата: {record['date']}, Категория: {record['category']}, Сумма: {record['amount']}, Описание: {record['description']}\")\r\n    else:\r\n        print(\"Записи не найдены.\")\r\n\r\n\r\n# Сохранение записей в файл\r\ndef save_records_to_file(records, filename):\r\n    with open(filename, 'w') as file:\r\n        for record in records:\r\n            file.write(f\"Дата: {record['date']}, Категория: {record['category']}, Сумма: {record['amount']}, Описание: {record['description']}\\n\")\r\n    print(\"Данные сохранены в файл.\")\r\n\r\n# Показ записей из файла\r\ndef show_file_content(filename):\r\n    if os.path.exists(filename):\r\n        with open(filename, \"r\") as file:\r\n            print(\"Содержимое файла:\")\r\n            for line in file:\r\n                print(line.strip())\r\n    else:\r\n        print(\"Файл не найден.\")\r\n\r\n\r\n# Загрузка записей из файла\r\ndef load_records_from_file(filename):\r\n    records = []\r\n    if os.path.exists(filename):\r\n        with open(filename, 'r') as file:\r\n            lines = file.readlines()\r\n            record = {}\r\n            for line in lines:\r\n                line = line.strip()\r\n                if line:\r\n                    key, value = line.split(':', 1)  # Ограничение до одного разбиения\r\n                    record[key.strip()] = value.strip()  # Убираем лишние пробелы\r\n                else:\r\n                    records.append(record)\r\n                    record = {}\r\n            if record:\r\n                records.append(record)\r\n    return records\r\n\r\n\r\n# Имя файла для хранения данных\r\nfilename = \"financial_records.txt\"\r\n\r\n\r\ndef main():\r\n    records = load_records_from_file(filename)\r\n    while True:\r\n        print(\"\\nЛичный финансовый кошелек\")\r\n        print(\"1. Просмотр баланса\")\r\n        print(\"2. Добавить запись\")\r\n        print(\"3. Редактировать запись\")\r\n        print(\"4. Поиск записей\")\r\n        print(\"5. Сохранить записи в файл\")\r\n        print(\"6. Показать содержимое файла\")\r\n        print(\"0. Выйти из программы\")\r\n        choice = input(\"Выберите действие: \")\r\n\r\n        if choice == \"1\":\r\n            show_balance(records)\r\n        elif choice == \"2\":\r\n            add_record(records)\r\n        elif choice == \"3\":\r\n            edit_record(records)\r\n        elif choice == \"4\":\r\n            search_records(records)\r\n        elif choice == \"5\":\r\n            save_records_to_file(records, filename)\r\n        elif choice == \"6\":\r\n            show_file_content(filename)\r\n        elif choice == \"0\":\r\n            break\r\n        else:\r\n            print(\"Неверный ввод. Пожалуйста, выберите действие из списка.\")\r\n\r\n\r\nif __name__ == \"__main__\":\r\n    main()\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/Personal_financial_wallet.py b/Personal_financial_wallet.py
+--- a/Personal_financial_wallet.py	(revision 438fba1a268b44c9d75383b73dab9c3855a0bdd7)
++++ b/Personal_financial_wallet.py	(date 1715169459941)
+@@ -1,158 +1,169 @@
+ import os
+ 
+-# Вывод текущего баланса
+-def show_balance(records):
+-    total_income = sum(record['amount'] for record in records if record['category'] == 'Доход')
+-    total_expense = sum(record['amount'] for record in records if record['category'] == 'Расход')
+-    total_balance = total_income - total_expense
+-    print(f"Текущий баланс: {total_balance}")
+-    print(f"Доходы: {total_income}")
+-    print(f"Расходы: {total_expense}")
++# Класс записей в Финансовом кошельке
++class Record:
++    def __init__(self, date, category, amount, description):
++        self.date = date
++        self.category = category
++        self.amount = amount
++        self.description = description
++
++# Класс Финансовый кошелек
++class FinancialWallet:
++    def __init__(self, filename):
++        self.filename = filename
++        self.records = self.load_records_from_file()
++
++    def load_records_from_file(self):
++        records = []
++        if os.path.exists(self.filename):
++            with open(self.filename, 'r') as file:
++                lines = file.readlines()
++                for line in lines:
++                    line = line.strip()
++                    if line:
++                        key, value = line.split(':', 1)  # Ограничение до одного разбиения
++                        # Приведение ключей к английской раскладке
++                        record_data = {
++                            'date': value.strip().split(' ')[0],  # Предполагаем, что дата всегда идет первой в строке
++                            'category': value.strip().split(' ')[1],
++                            # Предполагаем, что категория всегда идет второй в строке
++                            'amount': float(value.strip().split(' ')[2]),
++                            # Предполагаем, что сумма всегда идет третьей в строке
++                            'description': ' '.join(value.strip().split(' ')[3:])
++                            # Предполагаем, что описание идет после суммы
++                        }
++                        records.append(Record(**record_data))  # Создание объекта Record из данных
++        return records
++
++    # Функция сохранения записей в файл
++    def save_records_to_file(self):
++        with open(self.filename, 'w') as file:
++            for record in self.records:
++                file.write(
++                    f"Дата: {record.date}, Категория: {record.category}, Сумма: {record.amount}, Описание: {record.description}\n")
++        print("Данные сохранены в файл.")
++
++    # Показ текущего баланса
++    def show_balance(self):
++        total_income = sum(record.amount for record in self.records if record.category == 'Доход')
++        total_expense = sum(record.amount for record in self.records if record.category == 'Расход')
++        total_balance = total_income - total_expense
++        print(f"Текущий баланс: {total_balance}")
++        print(f"Доходы: {total_income}")
++        print(f"Расходы: {total_expense}")
+ 
+-# Добавление записи
+-def add_record(records):
+-    print("Введите данные о новой записи:")
+-    date = input("Дата (гггг-мм-дд): ")
+-    category_code = input("Выберите категорию (1 - Доход, 2 - Расход): ")
+-    category = 'Доход' if category_code == '1' else 'Расход'
+-    amount = float(input("Сумма: "))
+-    description = input("Описание: ")
+-    records.append({'date': date, 'category': category, 'amount': amount, 'description': description})
+-    print("Запись успешно добавлена!")
++    # Функция добавления записей
++    def add_record(self):
++        print("Введите данные о новой записи:")
++        date = input("Дата (гггг-мм-дд): ")
++        category_code = input("Выберите категорию (1 - Доход, 2 - Расход): ")
++        category = 'Доход' if category_code == '1' else 'Расход'
++        amount = float(input("Сумма: "))
++        description = input("Описание: ")
++        new_record = Record(date, category, amount, description)
++        self.records.append(new_record)
++        print("Запись успешно добавлена!")
+ 
+-# Редактирование записи
+-def edit_record(records):
+-    print("Введите номер записи, которую хотите отредактировать:")
+-    for i, record in enumerate(records):
+-        print(f"{i + 1}. {record['date']} - {record['category']} - {record['amount']} - {record['description']}")
+-    try:
+-        index = int(input("Номер записи: ")) - 1
+-        if 0 <= index < len(records):
+-            print("Выберите поле для редактирования:")
+-            print("1. Дата")
+-            print("2. Категория")
+-            print("3. Сумма")
+-            print("4. Описание")
+-            choice = input("Введите номер поля: ")
+-            if choice == '1':
+-                records[index]['date'] = input("Введите новую дату (гггг-мм-дд): ")
+-            elif choice == '2':
+-                category_code = input("Выберите новую категорию (1 - Доход, 2 - Расход): ")
+-                records[index]['category'] = 'Доход' if category_code == '1' else 'Расход'
+-            elif choice == '3':
+-                records[index]['amount'] = float(input("Введите новую сумму: "))
+-            elif choice == '4':
+-                records[index]['description'] = input("Введите новое описание: ")
+-            else:
+-                print("Некорректный ввод.")
+-        else:
+-            print("Некорректный номер записи.")
+-    except ValueError:
+-        print("Некорректный ввод.")
++    # Функция редактирования записей
++    def edit_record(self):
++        print("Введите номер записи, которую хотите отредактировать:")
++        for i, record in enumerate(self.records):
++            print(f"{i + 1}. {record.date} - {record.category} - {record.amount} - {record.description}")
++        try:
++            index = int(input("Номер записи: ")) - 1
++            if 0 <= index < len(self.records):
++                print("Выберите поле для редактирования:")
++                print("1. Дата")
++                print("2. Категория")
++                print("3. Сумма")
++                print("4. Описание")
++                choice = input("Введите номер поля: ")
++                if choice == '1':
++                    self.records[index].date = input("Введите новую дату (гггг-мм-дд): ")
++                elif choice == '2':
++                    category_code = input("Выберите новую категорию (1 - Доход, 2 - Расход): ")
++                    self.records[index].category = 'Доход' if category_code == '1' else 'Расход'
++                elif choice == '3':
++                    self.records[index].amount = float(input("Введите новую сумму: "))
++                elif choice == '4':
++                    self.records[index].description = input("Введите новое описание: ")
++                else:
++                    print("Некорректный ввод.")
++            else:
++                print("Некорректный номер записи.")
++        except ValueError:
++            print("Некорректный ввод.")
+ 
+-
+-# Поиск записи
+-def search_records(records):
+-    print("Выберите критерии для поиска:")
+-    print("1. По категории")
+-    print("2. По дате")
+-    print("3. По сумме")
+-    choice = input("Введите номер критерия: ")
+-    if choice == '1':
+-        category_code = input("Выберите категорию (1 - Доход, 2 - Расход): ")
+-        category = 'Доход' if category_code == '1' else 'Расход'
+-        found_records = [record for record in records if record['category'] == category]
+-    elif choice == '2':
+-        date = input("Введите дату (гггг-мм-дд): ")
+-        found_records = [record for record in records if record['date'] == date]
+-    elif choice == '3':
+-        amount = float(input("Введите сумму: "))
+-        found_records = [record for record in records if record['amount'] == amount]
+-    else:
+-        print("Некорректный ввод.")
+-        return
++    # Функция поиска записей
++    def search_records(self):
++        print("Выберите критерии для поиска:")
++        print("1. По категории")
++        print("2. По дате")
++        print("3. По сумме")
++        choice = input("Введите номер критерия: ")
++        if choice == '1':
++            category_code = input("Выберите категорию (1 - Доход, 2 - Расход): ")
++            category = 'Доход' if category_code == '1' else 'Расход'
++            found_records = [record for record in self.records if record.category == category]
++        elif choice == '2':
++            date = input("Введите дату (гггг-мм-дд): ")
++            found_records = [record for record in self.records if record.date == date]
++        elif choice == '3':
++            amount = float(input("Введите сумму: "))
++            found_records = [record for record in self.records if record.amount == amount]
++        else:
++            print("Некорректный ввод.")
++            return
+ 
+-    if found_records:
+-        print("Найденные записи:")
+-        for record in found_records:
+-            print(
+-                f"Дата: {record['date']}, Категория: {record['category']}, Сумма: {record['amount']}, Описание: {record['description']}")
+-    else:
+-        print("Записи не найдены.")
++        if found_records:
++            print("Найденные записи:")
++            for record in found_records:
++                print(
++                    f"Дата: {record.date}, Категория: {record.category}, Сумма: {record.amount}, Описание: {record.description}")
++        else:
++            print("Записи не найдены.")
+ 
+-
+-# Сохранение записей в файл
+-def save_records_to_file(records, filename):
+-    with open(filename, 'w') as file:
+-        for record in records:
+-            file.write(f"Дата: {record['date']}, Категория: {record['category']}, Сумма: {record['amount']}, Описание: {record['description']}\n")
+-    print("Данные сохранены в файл.")
+-
+-# Показ записей из файла
+-def show_file_content(filename):
+-    if os.path.exists(filename):
+-        with open(filename, "r") as file:
+-            print("Содержимое файла:")
+-            for line in file:
+-                print(line.strip())
+-    else:
+-        print("Файл не найден.")
++    # Функция показа записей из файла
++    def show_file_content(self):
++        if os.path.exists(self.filename):
++            with open(self.filename, "r") as file:
++                print("Содержимое файла:")
++                for line in file:
++                    print(line.strip())
++        else:
++            print("Файл не найден.")
+ 
+-
+-# Загрузка записей из файла
+-def load_records_from_file(filename):
+-    records = []
+-    if os.path.exists(filename):
+-        with open(filename, 'r') as file:
+-            lines = file.readlines()
+-            record = {}
+-            for line in lines:
+-                line = line.strip()
+-                if line:
+-                    key, value = line.split(':', 1)  # Ограничение до одного разбиения
+-                    record[key.strip()] = value.strip()  # Убираем лишние пробелы
+-                else:
+-                    records.append(record)
+-                    record = {}
+-            if record:
+-                records.append(record)
+-    return records
+-
+-
+-# Имя файла для хранения данных
+-filename = "financial_records.txt"
+-
+-
+-def main():
+-    records = load_records_from_file(filename)
+-    while True:
+-        print("\nЛичный финансовый кошелек")
+-        print("1. Просмотр баланса")
+-        print("2. Добавить запись")
+-        print("3. Редактировать запись")
+-        print("4. Поиск записей")
+-        print("5. Сохранить записи в файл")
+-        print("6. Показать содержимое файла")
+-        print("0. Выйти из программы")
+-        choice = input("Выберите действие: ")
++    # Основная функция программы
++    def main(self):
++        while True:
++            print("\nЛичный финансовый кошелек")
++            print("1. Просмотр баланса")
++            print("2. Добавить запись")
++            print("3. Редактировать запись")
++            print("4. Поиск записей")
++            print("5. Сохранить записи в файл")
++            print("6. Показать содержимое файла")
++            print("0. Выйти из программы")
++            choice = input("Выберите действие: ")
+ 
+-        if choice == "1":
+-            show_balance(records)
+-        elif choice == "2":
+-            add_record(records)
+-        elif choice == "3":
+-            edit_record(records)
+-        elif choice == "4":
+-            search_records(records)
+-        elif choice == "5":
+-            save_records_to_file(records, filename)
+-        elif choice == "6":
+-            show_file_content(filename)
+-        elif choice == "0":
+-            break
+-        else:
+-            print("Неверный ввод. Пожалуйста, выберите действие из списка.")
++            if choice == "1":
++                self.show_balance()
++            elif choice == "2":
++                self.add_record()
++            elif choice == "3":
++                self.edit_record()
++            elif choice == "4":
++                self.search_records()
++            elif choice == "5":
++                self.save_records_to_file()
++            elif choice == "6":
++                self.show_file_content()
++            elif choice == "0":
++                break
++            else:
++                print("Неверный ввод. Пожалуйста, выберите действие из списка.")
+ 
+-
+ if __name__ == "__main__":
+-    main()
++    wallet = FinancialWallet("financial_records.txt")
++    wallet.main()
+\ No newline at end of file
+Index: .idea/workspace.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<project version=\"4\">\r\n  <component name=\"AutoImportSettings\">\r\n    <option name=\"autoReloadType\" value=\"SELECTIVE\" />\r\n  </component>\r\n  <component name=\"ChangeListManager\">\r\n    <list default=\"true\" id=\"c6741a60-6fe2-4bd8-9f0a-c3b1457bc765\" name=\"Changes\" comment=\"Writing Functions\">\r\n      <change beforePath=\"$PROJECT_DIR$/.idea/workspace.xml\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/.idea/workspace.xml\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/Personal_financial_wallet.py\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/Personal_financial_wallet.py\" afterDir=\"false\" />\r\n    </list>\r\n    <option name=\"SHOW_DIALOG\" value=\"false\" />\r\n    <option name=\"HIGHLIGHT_CONFLICTS\" value=\"true\" />\r\n    <option name=\"HIGHLIGHT_NON_ACTIVE_CHANGELIST\" value=\"false\" />\r\n    <option name=\"LAST_RESOLUTION\" value=\"IGNORE\" />\r\n  </component>\r\n  <component name=\"FileTemplateManagerImpl\">\r\n    <option name=\"RECENT_TEMPLATES\">\r\n      <list>\r\n        <option value=\"Python Script\" />\r\n      </list>\r\n    </option>\r\n  </component>\r\n  <component name=\"Git.Settings\">\r\n    <option name=\"RECENT_GIT_ROOT_PATH\" value=\"$PROJECT_DIR$\" />\r\n  </component>\r\n  <component name=\"GitHubPullRequestSearchHistory\">{\r\n  &quot;lastFilter&quot;: {\r\n    &quot;state&quot;: &quot;OPEN&quot;,\r\n    &quot;assignee&quot;: &quot;aliensen36&quot;\r\n  }\r\n}</component>\r\n  <component name=\"GithubPullRequestsUISettings\">{\r\n  &quot;selectedUrlAndAccountId&quot;: {\r\n    &quot;url&quot;: &quot;https://github.com/aliensen36/Personal_financial_wallet&quot;,\r\n    &quot;accountId&quot;: &quot;b9597ecc-16ca-4d99-b694-fe2b585ec074&quot;\r\n  }\r\n}</component>\r\n  <component name=\"ProjectColorInfo\">{\r\n  &quot;associatedIndex&quot;: 0\r\n}</component>\r\n  <component name=\"ProjectId\" id=\"2fyACkJaqNV5jtLqvmRobPv8uSg\" />\r\n  <component name=\"ProjectLevelVcsManager\" settingsEditedManually=\"true\">\r\n    <ConfirmationsSetting value=\"2\" id=\"Add\" />\r\n  </component>\r\n  <component name=\"ProjectViewState\">\r\n    <option name=\"hideEmptyMiddlePackages\" value=\"true\" />\r\n    <option name=\"showLibraryContents\" value=\"true\" />\r\n  </component>\r\n  <component name=\"PropertiesComponent\"><![CDATA[{\r\n  \"keyToString\": {\r\n    \"Python.Personal_financial_wallet.executor\": \"Run\",\r\n    \"RunOnceActivity.ShowReadmeOnStart\": \"true\",\r\n    \"git-widget-placeholder\": \"master\",\r\n    \"ignore.virus.scanning.warn.message\": \"true\",\r\n    \"settings.editor.selected.configurable\": \"editor.preferences.fonts.default\"\r\n  }\r\n}]]></component>\r\n  <component name=\"SharedIndexes\">\r\n    <attachedChunks>\r\n      <set>\r\n        <option value=\"bundled-python-sdk-0509580d9d50-746f403e7f0c-com.jetbrains.pycharm.community.sharedIndexes.bundled-PC-241.14494.241\" />\r\n      </set>\r\n    </attachedChunks>\r\n  </component>\r\n  <component name=\"SpellCheckerSettings\" RuntimeDictionaries=\"0\" Folders=\"0\" CustomDictionaries=\"0\" DefaultDictionary=\"application-level\" UseSingleDictionary=\"true\" transferred=\"true\" />\r\n  <component name=\"TaskManager\">\r\n    <task active=\"true\" id=\"Default\" summary=\"Default task\">\r\n      <changelist id=\"c6741a60-6fe2-4bd8-9f0a-c3b1457bc765\" name=\"Changes\" comment=\"\" />\r\n      <created>1714762819144</created>\r\n      <option name=\"number\" value=\"Default\" />\r\n      <option name=\"presentableId\" value=\"Default\" />\r\n      <updated>1714762819144</updated>\r\n    </task>\r\n    <task id=\"LOCAL-00001\" summary=\"Writing Functions\">\r\n      <option name=\"closed\" value=\"true\" />\r\n      <created>1714763468937</created>\r\n      <option name=\"number\" value=\"00001\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00001\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1714763468937</updated>\r\n    </task>\r\n    <option name=\"localTasksCounter\" value=\"2\" />\r\n    <servers />\r\n  </component>\r\n  <component name=\"VcsManagerConfiguration\">\r\n    <MESSAGE value=\"Writing Functions\" />\r\n    <option name=\"LAST_COMMIT_MESSAGE\" value=\"Writing Functions\" />\r\n  </component>\r\n</project>
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/workspace.xml b/.idea/workspace.xml
+--- a/.idea/workspace.xml	(revision 438fba1a268b44c9d75383b73dab9c3855a0bdd7)
++++ b/.idea/workspace.xml	(date 1714918676596)
+@@ -4,7 +4,8 @@
+     <option name="autoReloadType" value="SELECTIVE" />
+   </component>
+   <component name="ChangeListManager">
+-    <list default="true" id="c6741a60-6fe2-4bd8-9f0a-c3b1457bc765" name="Changes" comment="Writing Functions">
++    <list default="true" id="c6741a60-6fe2-4bd8-9f0a-c3b1457bc765" name="Changes" comment="Edit functions">
++      <change afterPath="$PROJECT_DIR$/test_data/test_records.txt" afterDir="false" />
+       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+       <change beforePath="$PROJECT_DIR$/Personal_financial_wallet.py" beforeDir="false" afterPath="$PROJECT_DIR$/Personal_financial_wallet.py" afterDir="false" />
+     </list>
+@@ -46,15 +47,21 @@
+     <option name="hideEmptyMiddlePackages" value="true" />
+     <option name="showLibraryContents" value="true" />
+   </component>
+-  <component name="PropertiesComponent"><![CDATA[{
+-  "keyToString": {
+-    "Python.Personal_financial_wallet.executor": "Run",
+-    "RunOnceActivity.ShowReadmeOnStart": "true",
+-    "git-widget-placeholder": "master",
+-    "ignore.virus.scanning.warn.message": "true",
+-    "settings.editor.selected.configurable": "editor.preferences.fonts.default"
+-  }
+-}]]></component>
++  <component name="PropertiesComponent">{
++  &quot;keyToString&quot;: {
++    &quot;Python.Personal_financial_wallet.executor&quot;: &quot;Run&quot;,
++    &quot;Python.Personal_financial_wallet_OOP.executor&quot;: &quot;Run&quot;,
++    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
++    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
++    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
++    &quot;settings.editor.selected.configurable&quot;: &quot;editor.preferences.fonts.default&quot;
++  }
++}</component>
++  <component name="RecentsManager">
++    <key name="MoveFile.RECENT_KEYS">
++      <recent name="C:\Users\user\PycharmProjects\Effective_Mobile_test\test_data" />
++    </key>
++  </component>
+   <component name="SharedIndexes">
+     <attachedChunks>
+       <set>
+@@ -79,11 +86,20 @@
+       <option name="project" value="LOCAL" />
+       <updated>1714763468937</updated>
+     </task>
+-    <option name="localTasksCounter" value="2" />
++    <task id="LOCAL-00002" summary="Edit functions">
++      <option name="closed" value="true" />
++      <created>1714825821116</created>
++      <option name="number" value="00002" />
++      <option name="presentableId" value="LOCAL-00002" />
++      <option name="project" value="LOCAL" />
++      <updated>1714825821116</updated>
++    </task>
++    <option name="localTasksCounter" value="3" />
+     <servers />
+   </component>
+   <component name="VcsManagerConfiguration">
+     <MESSAGE value="Writing Functions" />
+-    <option name="LAST_COMMIT_MESSAGE" value="Writing Functions" />
++    <MESSAGE value="Edit functions" />
++    <option name="LAST_COMMIT_MESSAGE" value="Edit functions" />
+   </component>
+ </project>
+\ No newline at end of file
+diff --git a/test_data/test_records.txt b/test_data/test_records.txt
+new file mode 100644
